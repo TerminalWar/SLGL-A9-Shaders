@@ -49,3 +49,14 @@ The goal is not maximum PC fidelity. The goal is maximum beauty per GPU cycle on
 ## First implementation slice
 
 This first slice establishes the plan, adds explicit A9 profiles, and replaces high-cost defaults with Adreno-friendly approximations in the shared shader code. Later slices should continue with deeper pass removal and more targeted color/lighting tuning after device-side profiling.
+
+## Session 2 update: testable first visual baseline
+
+This update keeps every A9 tier selectable from the shader options and adds an `A9_QUALITY` switch so each coding session can be loaded and tested on-device immediately:
+
+- `0` Eco: thermal/battery validation.
+- `1` Balanced: default 60 FPS target for the Galaxy Tab A9+.
+- `2` Visual: richer clouds, bloom-capable visuals, and stronger water/lighting style while avoiding SSR.
+- `3` Showcase: short-session screenshot mode where heavier effects are allowed.
+
+The code now uses quality-gated branches for cloud layering and compile-time safety rails for expensive features so Balanced/Eco do not accidentally carry Showcase-only shader cost.

@@ -37,6 +37,10 @@ vec3 get_clouds_flat(vec3 ViewPosN, vec3 PlayerPos, vec3 PlayerPosN, vec3 SunGla
     CloudPos = (CloudPos + Animation) * 32;
 
     float Noise = noise(CloudPos);
+    #if A9_QUALITY >= 2
+        float HighLayer = noise(CloudPos * 0.54 + vec2(31.7, 12.4));
+        Noise = max(Noise, HighLayer * 0.72);
+    #endif
     float CloudAmount = CLOUD_AMOUNT / 100.0 + (rainStrength + thunderStrength) / 5;
     Noise *= smoothstep(0.0, 0.4 - CLOUD_OPACITY, Noise - 0.6 + CloudAmount);
     Noise *= smoothstep(0.0, 0.2, PlayerPosN.y);
@@ -48,8 +52,9 @@ vec3 get_clouds_flat(vec3 ViewPosN, vec3 PlayerPos, vec3 PlayerPosN, vec3 SunGla
 
     float VdotL = dot(ViewPosN, sunOrMoonPosN);
     float Forward = pow2(clamp(VdotL * 0.5 + 0.5, 0.0, 1.0));
-    vec3 CloudColor = SKY_GROUND * 0.45 + SunGlare * 0.18;
-    CloudColor += SUN_DIRECT * (0.08 + Forward * 0.32);
+    float EdgeLight = smoothstep(0.15, 0.85, Noise) * (0.65 + 0.35 * Forward);
+    vec3 CloudColor = SKY_GROUND * 0.45 + SunGlare * (0.18 + EdgeLight * 0.18);
+    CloudColor += SUN_DIRECT * (0.08 + Forward * 0.32 + EdgeLight * 0.10);
 
     #ifdef IS_IRIS
         if(lightningBoltPosition.w > 0) {  

@@ -109,17 +109,26 @@ vec3 tweak_lightmap(vec3 Albedo, vec3 PlayerPos, vec2 LightmapCoords, vec2 texco
             #endif
             NdotL = max(0, NdotL) * Shadow;
         #endif
-        LightColorFinal += SUN_DIRECT * NdotL;
+        float A9SunWrap = NdotL * (0.92 + 0.08 * LightmapCoords.y);
+        LightColorFinal += SUN_DIRECT * A9SunWrap;
     #endif
 
     const vec3 TorchColor = to_linear(vec3(f_LM_RED, f_LM_GREEN, f_LM_BLUE));
     
 
     float TorchPow = LightmapCoords.x;
+    // A9 torch/cave shaping: one polynomial boost gives warmer caves without
+    // extra lights, loops, or texture reads.
+    #if A9_QUALITY >= 2
+        TorchPow = TorchPow * (1.0 + TorchPow * 0.32);
+    #else
+        TorchPow = TorchPow * (1.0 + TorchPow * 0.22);
+    #endif
     #ifdef PBR_SPECULAR
         TorchPow += Emissiveness;
     #endif
-    LightColorFinal = TorchColor * TorchPow + mix(get_min_light(), LightColorFinal, LightmapCoords.y);
+    vec3 A9CaveAmbient = get_min_light() * (1.0 + (1.0 - LightmapCoords.y) * 0.35);
+    LightColorFinal = TorchColor * TorchPow + mix(A9CaveAmbient, LightColorFinal, LightmapCoords.y);
     LightColorFinal *= 1 - darknessLightFactor;
     #ifdef PBR_SPECULAR
         LightColorFinal *= 1 - Porosity * wetness * 0.66 * LightmapCoords.y;

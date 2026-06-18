@@ -122,7 +122,12 @@ vec3 get_atm_fog(vec3 Color, vec3 ScreenPos, vec3 PlayerPos, float Dist, float V
     // Ambient
     Scattering += tint_underwater(SKY_GROUND / PI);
 
-    float Transmittance = exp(-FOG_EXTINCTION * min(Dist, 128) * Density);
+    float FogDepth = FOG_EXTINCTION * min(Dist, 128) * Density;
+    #if A9_QUALITY <= 2
+        float Transmittance = 1.0 / (1.0 + FogDepth * (1.0 + FogDepth * 0.28));
+    #else
+        float Transmittance = exp(-FogDepth);
+    #endif
 
     // TODO: Make border fog work properly with this
     Color *= Transmittance;

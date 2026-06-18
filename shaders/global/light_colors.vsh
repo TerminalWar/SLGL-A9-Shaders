@@ -30,6 +30,13 @@ void get_sky_color() {
 
     SKY_TOP = apply_saturation(SKY_TOP, DesatFactor) * DarkenFactor;
     SKY_GROUND = SKY_GROUND * DarkenFactor;
+
+    // Mellow Infinity A9 atmosphere: push perceived sky quality with a tiny
+    // golden-hour gradient instead of extra passes or texture lookups.
+    float GoldenHour = sunriseStrength + sunsetStrength;
+    vec3 WarmHorizon = to_linear(vec3(1.0, 0.54, 0.24));
+    SKY_GROUND = mix(SKY_GROUND, max(SKY_GROUND, WarmHorizon * 0.85), GoldenHour * 0.32);
+    SKY_TOP = mix(SKY_TOP, SKY_TOP * vec3(0.85, 0.94, 1.12), nightStrength * 0.28);
 }
 
 void get_sun_color() {
@@ -50,7 +57,10 @@ void get_sun_color() {
 
     SUN_AMBIENT = vec3(f_SUNRISE_AMBIENT * sunriseStrength + f_NOON_AMBIENT * dayStrength + f_SUNSET_AMBIENT * sunsetStrength + f_NIGHT_AMBIENT * nightStrength);
     SUN_AMBIENT = to_linear(SUN_AMBIENT);
-    //SUN_AMBIENT = mix(SUN_AMBIENT, mix(SKY_TOP, SKY_GROUND, 0.7), 0.4);
+
+    float GoldenHour = sunriseStrength + sunsetStrength;
+    vec3 SkyAmbient = mix(SKY_GROUND, SKY_TOP, 0.35);
+    SUN_AMBIENT = mix(SUN_AMBIENT, SkyAmbient, 0.22 + GoldenHour * 0.18);
 
     float LHeight = sin(sunAngleAtHome * PI * 2); // view_player(sunPosN).y;
 
@@ -69,6 +79,7 @@ void get_sun_color() {
         SUN_DIRECT *= MoonPhaseFactor;
     }
     SUN_DIRECT *= smoothstep(0.0, 0.2, abs(LHeight)); // Fadeout to avoid harsh transition at sun rise/set
+    SUN_DIRECT *= 1.0 + GoldenHour * 0.28 - nightStrength * 0.12;
 
     float DesatFactor = 1 - rainStrength * 0.5;
     float DarkenFactor = 1 - rainStrength * 0.5;
