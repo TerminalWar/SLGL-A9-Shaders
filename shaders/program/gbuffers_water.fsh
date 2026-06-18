@@ -25,7 +25,7 @@ void main() {
 	vec3 PlayerPos = view_player(ViewPos, false);
 
 	float Dither = dither(gl_FragCoord.xy);
-	#if (defined DISTANT_HORIZONS) && (!defined VOXY)
+	#if defined DISTANT_HORIZONS
 
 	// this pass now comes AFTER dh_water for some reason???????????????????????
 	// i give up

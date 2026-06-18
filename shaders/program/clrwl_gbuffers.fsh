@@ -42,7 +42,7 @@ void main() {
     vec3 PlayerPos = view_player(ViewPos, false);
 
     float Dither = dither(gl_FragCoord.xy);
-    #if (defined DISTANT_HORIZONS) && (!defined VOXY)
+    #if defined DISTANT_HORIZONS
         if (transition_to_dh(PlayerPos, false, Dither)) {
             discard;
         }

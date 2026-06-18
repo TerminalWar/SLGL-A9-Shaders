@@ -81,10 +81,4 @@ void main() {
         #endif
     }
 
-    #ifdef VOXY
-        if(texture(depthtex1, texcoord).r >= 1) {
-            vec4 VxData = texture(colortex16, texcoord);
-            Color.rgb = mix(Color.rgb, VxData.rgb, VxData.a);
-        }
-    #endif 
 }

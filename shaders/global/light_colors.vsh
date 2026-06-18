@@ -1,17 +1,9 @@
 // This file initializes the 4 varyings SKY_TOP, SKY_GROUND, SUN_AMBIENT and SUN_DIRECT
 // Call init_colors() in the vertex stage if you need to use these
-// Except for voxy passes, where you have no control over the vertex stage and you have to call this in the fragment stage
-#ifndef VOXY_TERRAIN
-    flat out vec3 SUN_DIRECT;
-    flat out vec3 SUN_AMBIENT;
-    flat out vec3 SKY_TOP;
-    flat out vec3 SKY_GROUND;
-#else
-    vec3 SUN_DIRECT;
-    vec3 SUN_AMBIENT;
-    vec3 SKY_TOP;
-    vec3 SKY_GROUND;
-#endif
+flat out vec3 SUN_DIRECT;
+flat out vec3 SUN_AMBIENT;
+flat out vec3 SKY_TOP;
+flat out vec3 SKY_GROUND;
 
 void get_sky_color() {
     const vec3 SKY_TOP_NOON = to_linear(vec3(f_NOON_SKY_T_R, f_NOON_SKY_T_G, f_NOON_SKY_T_B));
