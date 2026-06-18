@@ -49,9 +49,6 @@ vec2 tweak_lightmap_vertex(vec2 LightmapCoords, inout vec3 SunAmbient, inout vec
 
 vec3 tweak_lightmap(vec3 Albedo, vec3 PlayerPos, vec2 LightmapCoords, vec2 texcoord, vec3 ScreenPos, mat3 TBN, float Dither, float PomShadow) {
     vec3 LightColorFinal = SUN_AMBIENT;
-    #ifdef VOXY_TERRAIN
-        LightmapCoords = tweak_lightmap_vertex(LightmapCoords, LightColorFinal, SUN_DIRECT, normalize(ViewPos), TBN[2], PlayerPos);
-    #endif
     #ifdef PBR_NORMAL
         vec3 PackNormal; float PackAo;
         decode_normal(texcoord, PackNormal, PackAo);
@@ -64,7 +61,7 @@ vec3 tweak_lightmap(vec3 Albedo, vec3 PlayerPos, vec2 LightmapCoords, vec2 texco
         float Smoothness, F0, PackSSS, Porosity, Emissiveness;
         decode_specular(texcoord, Smoothness, F0, PackSSS, Porosity, Emissiveness);
     #endif
-    #if (defined DH_TERRAIN) || (defined VOXY_TERRAIN)
+    #ifdef DH_TERRAIN
         bool IsDH = true;
     #else
         bool IsDH = false;

@@ -11,21 +11,11 @@ vec3 screen_view(vec3 x, bool IsDH) {
 }
 
 vec3 view_player(vec3 x, bool IsDH) {
-    #ifdef VOXY
-        mat4 Mat = IsDH ? vxModelViewInv : gbufferModelViewInverse;
-    #else
-        mat4 Mat = gbufferModelViewInverse;
-    #endif
-    return mat3(Mat) * x;
+    return mat3(gbufferModelViewInverse) * x;
 }
 
 vec3 player_view(vec3 x, bool IsDH) {
-    #ifdef VOXY
-        mat4 Mat = IsDH ? vxModelView : gbufferModelView;
-    #else
-        mat4 Mat = gbufferModelView;
-    #endif
-    return mat3(Mat) * x;
+    return mat3(gbufferModelView) * x;
 }
 
 vec3 view_screen(vec3 x, bool IsDH) {

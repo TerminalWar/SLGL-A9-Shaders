@@ -1,13 +1,8 @@
 // In shaderlabs discord: https://discord.com/channels/237199950235041794/525510804494221312/955506913834070016
 vec2 toPrevScreenPos(vec2 currScreenPos, float depth, bool isDH) {
     mat4 ProjInv = isDH ? dhProjectionInverse : gbufferProjectionInverse;
-    #ifdef VOXY
-        mat4 ModelViewInv = isDH ? vxModelViewInv : gbufferModelViewInverse;
-        mat4 PrevModelView = isDH ? vxModelViewPrev : gbufferPreviousModelView;
-    #else
-        mat4 ModelViewInv = gbufferModelViewInverse;
-        mat4 PrevModelView = gbufferPreviousModelView;
-    #endif
+    mat4 ModelViewInv = gbufferModelViewInverse;
+    mat4 PrevModelView = gbufferPreviousModelView;
     mat4 PrevProj = isDH ? dhPreviousProjection : gbufferPreviousProjection;
     vec3 currViewPos = vec3(vec2(ProjInv[0].x, ProjInv[1].y) * (currScreenPos.xy * 2.0 - 1.0) + ProjInv[3].xy, ProjInv[3].z);
     currViewPos /= (ProjInv[2].w * (depth * 2.0 - 1.0) + ProjInv[3].w);

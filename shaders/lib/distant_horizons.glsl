@@ -38,9 +38,6 @@ float get_depth_solid(vec2 ScreenPos, out bool IsDH) {
 }
 
 float get_depth(vec2 ScreenPos, out bool IsDH) {
-    #if (defined DEFERRED) && (defined VOXY)
-        return get_depth_solid(ScreenPos, IsDH);
-    #endif
     float Depth = texture(depthtex0, ScreenPos).x;
     IsDH = false;
     // Fix for AMD's electriic boogaloo (from Eldeston)
@@ -87,9 +84,6 @@ float get_depth_solid_lq(vec2 ScreenPos, out bool IsDH) {
 }
 
 float get_depth_lq(vec2 ScreenPos, out bool IsDH) {
-    #if (defined DEFERRED) && (defined VOXY)
-        return get_depth_solid_lq(ScreenPos, IsDH);
-    #endif
     #ifdef USE_LQ_DEPTH
         float Depth = texture(colortex5, ScreenPos).x;
     #else
