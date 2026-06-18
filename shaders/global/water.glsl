@@ -140,11 +140,19 @@ vec4 get_fancy_water(vec3 ScreenPos, vec3 ViewPos, vec3 ViewPosN, vec3 PlayerPos
             vec3 WaterNormal = TBN[2];
         #endif
 
-        float Fresnel = schlick(-ViewPosN, WaterNormal, 0.02) * SkyBrightness;
+        float VdotN = max(0.0, dot(-ViewPosN, WaterNormal));
+        float Fresnel = (0.04 + pow2(1.0 - VdotN) * 0.42) * SkyBrightness;
 
         if (WorldNormal.y > -0.01) { // Prevent reflections underwater and other weird scenarios
-            vec3 Reflection = get_reflection(ScreenPos, ViewPos, ViewPosN, WaterNormal, Dither, Fresnel, 1, WorldNormal.y, true, IsDH);
+            vec3 Reflection;
+            #if REFLECTIONS == 1
+                vec3 ReflectedVec = reflect(ViewPosN, WaterNormal);
+                Reflection = sky_reflection(ReflectedVec, WorldNormal.y, dot(ReflectedVec, sunPosN), true);
+            #else
+                Reflection = get_reflection(ScreenPos, ViewPos, ViewPosN, WaterNormal, Dither, Fresnel, 1, WorldNormal.y, true, IsDH);
+            #endif
             BaseColor.rgb += Reflection * Fresnel;
+            BaseColor.rgb = mix(BaseColor.rgb, to_linear(vec3(f_WATER_RED, f_WATER_GREEN, f_WATER_BLUE)), BaseColor.a * 0.18);
         }
     #endif
 
