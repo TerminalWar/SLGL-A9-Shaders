@@ -17,8 +17,8 @@ float shadow_blur(vec3 SampleCoord, float Radius) {
 }
 
 float pcf(float PenumbraSize, vec3 ShadowPosUndistorted, float Dither) {
-    const int SAMPLE_COUNT = 8;
-    
+    const int SAMPLE_COUNT = 4;
+
     Dither = Dither * TAU;
     vec2 Offset = vec2(cos(Dither), sin(Dither)) / shadowMapResolution;
     mat2 RotationOffset = mat2(
@@ -60,11 +60,11 @@ float get_shadow_dynamic(vec3 ViewPos, vec3 PlayerPos, bool IsDH, vec3 FlatNorma
 
     float ShadowFinal;
     #if SHADOW_FILTER > 0
-        float PenumbraSize = DoSSS ? 5 : 1;
+        float PenumbraSize = DoSSS ? 3 : 0.75;
         #if SHADOW_FILTER == 1
             ShadowFinal = shadow_blur(ShadowPos, PenumbraSize);
         #else
-            ShadowFinal = pcf(PenumbraSize * 2 * PCF_STRENGTH, ShadowPosUndistorted, Dither);
+            ShadowFinal = pcf(PenumbraSize * PCF_STRENGTH, ShadowPosUndistorted, Dither);
         #endif
     #else
         ShadowFinal = texture(shadowtex0, ShadowPos);

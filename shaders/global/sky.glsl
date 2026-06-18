@@ -37,23 +37,24 @@ vec3 get_clouds_flat(vec3 ViewPosN, vec3 PlayerPos, vec3 PlayerPosN, vec3 SunGla
     CloudPos = (CloudPos + Animation) * 32;
 
     float Noise = noise(CloudPos);
+    #if A9_QUALITY >= 2
+        float HighLayer = noise(CloudPos * 0.54 + vec2(31.7, 12.4));
+        Noise = max(Noise, HighLayer * 0.72);
+    #endif
     float CloudAmount = CLOUD_AMOUNT / 100.0 + (rainStrength + thunderStrength) / 5;
     Noise *= smoothstep(0.0, 0.4 - CLOUD_OPACITY, Noise - 0.6 + CloudAmount);
     Noise *= smoothstep(0.0, 0.2, PlayerPosN.y);
 
-    // Ultimate RTX raytraced ptgi 2000 cloud lighting
-    const float DENSITY = 1.5;
-    float Transmittance = exp(-Noise * DENSITY);
-    float Absorbtion = noise(CloudPos + view_player(sunOrMoonPosN, false).xz * 8);
-    Absorbtion = Absorbtion * 1.5;
-
-    float LHeight = sin(sunAngleAtHome * PI * 2);
-    vec3 CloudColorRaw = (SKY_GROUND * 2 + SunGlare);
-    vec3 CloudColor = CloudColorRaw * 0.25 / PI;
+    // A9 path: one coverage sample plus gradient-lit clouds. Avoid a second
+    // noise lookup and exponential absorption on Adreno 619.
+    const float DENSITY = 1.35;
+    float Transmittance = 1.0 / (1.0 + Noise * DENSITY);
 
     float VdotL = dot(ViewPosN, sunOrMoonPosN);
-    float MiePhase = max(xlf_phase(VdotL, 0.7) * 1.5, 1 / PI);
-    CloudColor += SUN_DIRECT * MiePhase * exp(-Absorbtion * DENSITY);
+    float Forward = pow2(clamp(VdotL * 0.5 + 0.5, 0.0, 1.0));
+    float EdgeLight = smoothstep(0.15, 0.85, Noise) * (0.65 + 0.35 * Forward);
+    vec3 CloudColor = SKY_GROUND * 0.45 + SunGlare * (0.18 + EdgeLight * 0.18);
+    CloudColor += SUN_DIRECT * (0.08 + Forward * 0.32 + EdgeLight * 0.10);
 
     #ifdef IS_IRIS
         if(lightningBoltPosition.w > 0) {  
@@ -140,10 +141,13 @@ vec3 get_clouds(vec3 ViewPosN, vec3 PlayerPos, vec3 PlayerPosN, vec3 SunGlare, v
 }
 
 vec3 get_sky(vec3 ViewPosN, vec3 SunGlare) {
-    float upDot = dot(ViewPosN, gbufferModelView[1].xyz) + 0.1; //not much, what's up with you?
+    float upDot = clamp(dot(ViewPosN, gbufferModelView[1].xyz) * 0.5 + 0.5, 0.0, 1.0);
+    float Horizon = pow2(1.0 - upDot);
+    float GoldenHour = pow2(sunriseStrength + sunsetStrength);
 
-    vec3 MixedColor = mix(SKY_TOP, SKY_GROUND + SunGlare, fogify(max(upDot, 0.0), 0.03));
-    
+    vec3 MixedColor = mix(SKY_GROUND + SunGlare * (0.55 + GoldenHour), SKY_TOP, upDot * upDot);
+    MixedColor += SUN_DIRECT * Horizon * GoldenHour * 0.08;
+
     return MixedColor;
 }
 
